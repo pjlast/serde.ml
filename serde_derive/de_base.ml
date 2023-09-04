@@ -10,20 +10,30 @@ let var ~ctxt name =
 
 let longident ~ctxt name = name |> Longident.parse |> var ~ctxt
 
-let is_primitive_type (t : core_type) =
+let rec is_primitive_type (t : core_type) =
   match t.ptyp_desc with
+  | Ptyp_constr (name, [ tp ]) -> (
+      match name.txt |> Longident.name with
+      | "option" -> is_primitive_type tp
+      | _ -> false)
   | Ptyp_constr (name, _) -> (
       match name.txt |> Longident.name with
-      | "bool" | "char" | "float" | "int" | "string" | "unit" | "option" -> true
+      | "bool" | "char" | "float" | "int" | "string" | "unit" -> true
       | _ -> false)
   | _ -> false
 
 (** visitor / deserializer resolution *)
 
-let de_fun ~ctxt (t : core_type) =
+let rec de_fun ~ctxt (t : core_type) =
   let loc = loc ~ctxt in
   match t.ptyp_desc with
   (* Serialize a constructor *)
+  | Ptyp_constr (name, [ tp ]) -> (
+      match name.txt |> Longident.name with
+      | "option" ->
+          let e = de_fun ~ctxt tp in
+          [%expr [%e e]]
+      | _ -> [%expr ()])
   | Ptyp_constr (name, _) -> (
       match name.txt |> Longident.name with
       | "bool" -> [%expr Serde.De.deserialize_bool]
@@ -31,8 +41,6 @@ let de_fun ~ctxt (t : core_type) =
       | "float" -> [%expr Serde.De.deserialize_float]
       | "int" -> [%expr Serde.De.deserialize_int]
       | "string" -> [%expr Serde.De.deserialize_string]
-      | "option" ->
-          [%expr Serde.De.deserialize_option Serde.De.deserialize_string]
       | "unit" -> [%expr Serde.De.deserialize_unit]
       | _ ->
           let ser_fn_name =
@@ -78,10 +86,14 @@ let de_fun ~ctxt (t : core_type) =
       Printf.printf "found arrow";
       [%expr ()]
 
-let visitor_mod ~ctxt (t : core_type) =
+let rec visitor_mod ~ctxt (t : core_type) =
   let loc = loc ~ctxt in
   match t.ptyp_desc with
   (* Serialize a constructor *)
+  | Ptyp_constr (name, [ tp ]) -> (
+      match name.txt |> Longident.name with
+      | "option" -> visitor_mod ~ctxt tp
+      | _ -> None)
   | Ptyp_constr (name, _) -> (
       match name.txt |> Longident.name with
       | "bool" -> Some [%expr (module Serde.De.Impls.Bool_visitor)]
@@ -89,7 +101,6 @@ let visitor_mod ~ctxt (t : core_type) =
       | "float" -> Some [%expr (module Serde.De.Impls.Float_visitor)]
       | "int" -> Some [%expr (module Serde.De.Impls.Int_visitor)]
       | "string" -> Some [%expr (module Serde.De.Impls.String_visitor)]
-      | "option" -> Some [%expr (module Serde.De.Impls.String_visitor)]
       | "unit" -> Some [%expr (module Serde.De.Impls.Unit_visitor)]
       | _ -> None)
   (* Unsupported serialization for these *)

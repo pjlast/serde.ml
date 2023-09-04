@@ -72,7 +72,7 @@ end
 module Type_record = struct
   type record = {
     r_name : string;
-    r_favorite_number : int;
+    r_favorite_number : int option;
     r_location : string;
     r_favorite_color : string option;
   }
@@ -84,7 +84,7 @@ module Type_record = struct
     parse_json {| [ "Benjamin Sisko", 9, "Bajor", "Blue" ] |}
       {
         r_name = "Benjamin Sisko";
-        r_favorite_number = 9;
+        r_favorite_number = Some 9;
         r_location = "Bajor";
         r_favorite_color = Some "Blue";
       }
@@ -99,7 +99,7 @@ module Type_record = struct
   |}
       {
         r_name = "Benjamin Sisko";
-        r_favorite_number = 9;
+        r_favorite_number = Some 9;
         r_location = "Bajor";
         r_favorite_color = None;
       }
@@ -109,13 +109,12 @@ module Type_record = struct
       {|
   { "r_name": "Benjamin Sisko",
     "r_favorite_number": 9,
-    "r_location": "Bajor",
-    "r_favorite_color": null
+    "r_location": "Bajor"
   }
   |}
       {
         r_name = "Benjamin Sisko";
-        r_favorite_number = 9;
+        r_favorite_number = Some 9;
         r_location = "Bajor";
         r_favorite_color = None;
       }
@@ -130,7 +129,7 @@ module Type_variant = struct
     | Tuple1 of string
     | Tuple2 of string * Type_alias.alias
     | Record3 of {
-        name : name;
+        name : name option;
         favorite_number : int;
         location : string option;
       }
@@ -150,7 +149,7 @@ module Type_variant = struct
     parse_json {|{ "Record3": [ ["Benjamin", "Sisko"], 9, "Bajor"] }|}
       (Record3
          {
-           name = { first = "Benjamin"; last = "Sisko" };
+           name = Some { first = "Benjamin"; last = "Sisko" };
            favorite_number = 9;
            location = Some "Bajor";
          })
@@ -159,20 +158,11 @@ module Type_variant = struct
     parse_json
       {|{
     "Record3": {
-      "name": {
-        "first": "Benjamin",
-        "last": "Sisko",
-      },
       "favorite_number": 9,
       "location": "Bajor"
     }
   }|}
-      (Record3
-         {
-           name = { first = "Benjamin"; last = "Sisko" };
-           favorite_number = 9;
-           location = Some "Bajor";
-         })
+      (Record3 { name = None; favorite_number = 9; location = Some "Bajor" })
 end
 
 (*
