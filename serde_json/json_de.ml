@@ -59,8 +59,15 @@ Serde.De.Make (struct
       (value, 'error de_error) result =
    fun state (module Self) (module V) ->
     Json.Parser.skip_space state;
-    let* string = Json.Parser.read_string state in
-    V.visit_string_option string
+    if
+      not
+        (match Json.Parser.read_null_if_possible state with
+        | Ok b -> b
+        | Error _ -> false)
+    then
+      let* string = Json.Parser.read_string state in
+      V.visit_string_option (Some string)
+    else V.visit_string_option None
 
   let deserialize_seq :
       type value.

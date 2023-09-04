@@ -72,5 +72,5 @@ module String_option_visitor = struct
   type error = unit
   type tag = unit
 
-  let visit_string_option str = Ok (Some str)
+  let visit_string_option str_opt = Ok str_opt
 end

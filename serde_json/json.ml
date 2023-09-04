@@ -42,6 +42,9 @@ module Parser = struct
   let read_string { yojson; lexbuf } =
     _run (fun () -> Yojson.Safe.read_string yojson lexbuf)
 
+  let read_null_if_possible { yojson; lexbuf } =
+      _run (fun () -> Yojson.Safe.read_null_if_possible yojson lexbuf)
+
   let read_int { yojson; lexbuf } =
     _run (fun () -> Yojson.Safe.read_int yojson lexbuf)
 

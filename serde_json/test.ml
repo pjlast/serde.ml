@@ -103,6 +103,22 @@ module Type_record = struct
         r_location = "Bajor";
         r_favorite_color = None;
       }
+
+  let%test "parse object json representation with null" =
+    parse_json
+      {|
+  { "r_name": "Benjamin Sisko",
+    "r_favorite_number": 9,
+    "r_location": "Bajor",
+    "r_favorite_color": null
+  }
+  |}
+      {
+        r_name = "Benjamin Sisko";
+        r_favorite_number = 9;
+        r_location = "Bajor";
+        r_favorite_color = None;
+      }
 end
 
 module Type_variant = struct

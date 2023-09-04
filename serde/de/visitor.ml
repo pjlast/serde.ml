@@ -24,7 +24,8 @@ module Unimplemented = struct
   let visit_string : string -> ('value, 'error Error.de_error) result =
    fun _ -> Error.unimplemented "visit_string"
 
-  let visit_string_option : string -> ('value, 'error Error.de_error) result =
+  let visit_string_option :
+      string option -> ('value, 'error Error.de_error) result =
    fun _ -> Error.unimplemented "visit_string_option"
 
   let visit_seq :

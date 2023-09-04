@@ -175,7 +175,7 @@ module rec Rec : sig
     val visit_string : string -> (value, 'error Error.de_error) result
 
     val visit_string_option :
-      string -> (value, 'error Error.de_error) result
+      string option -> (value, 'error Error.de_error) result
 
     val visit_seq :
       'state.
@@ -368,7 +368,7 @@ end = struct
     val visit_string : string -> (value, 'error Error.de_error) result
 
     val visit_string_option :
-      string -> (value, 'error Error.de_error) result
+      string option -> (value, 'error Error.de_error) result
 
     val visit_seq :
       'state.
