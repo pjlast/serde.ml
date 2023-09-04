@@ -111,6 +111,42 @@ Serde.De.Make (struct
             found: " ^ String.make 1 c)
     | None -> Error.message "end of stream!"
 
+  let deserialize_string_option :
+      type value.
+      state ->
+      state Deserializer.t ->
+      value Visitor.t ->
+      (value, 'error de_error) result =
+   fun state (module De) (module V) ->
+    match Reader.peek state.reader with
+    | Some '"' ->
+        Reader.drop state.reader;
+        let rec acc_str acc =
+          match Reader.peek state.reader with
+          | Some '"' ->
+              Reader.drop state.reader;
+              Ok acc
+          | Some c ->
+              Reader.drop state.reader;
+              acc_str (acc ^ String.make 1 c)
+          | None -> Error.message "unexpected end of string"
+        in
+        let* str = acc_str "" in
+        V.visit_string str
+    | Some c ->
+        Error.message
+          ("expected string to begin with \" (double-quotes), but instead \
+            found: " ^ String.make 1 c)
+    | None -> Error.message "end of stream!"
+
+  let deserialize_option :
+      type value.
+      state ->
+      state Deserializer.t ->
+      value Visitor.t ->
+      (value option, 'error de_error) result =
+   fun _ (module De) (module V) -> message "unimplemented"
+
   let deserialize_seq :
       type value.
       state ->
