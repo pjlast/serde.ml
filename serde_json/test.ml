@@ -74,14 +74,20 @@ module Type_record = struct
     r_name : string;
     r_favorite_number : int;
     r_location : string;
+    r_favorite_color : string option;
   }
-  [@@deriving eq, serializer, deserializer]
+  [@@deriving eq, deserializer]
 
   let parse_json = parse_json equal_record deserialize_record
 
   let%test "parse packed json representation" =
-    parse_json {| [ "Benjamin Sisko", 9, "Bajor", ] |}
-      { r_name = "Benjamin Sisko"; r_favorite_number = 9; r_location = "Bajor" }
+    parse_json {| [ "Benjamin Sisko", 9, "Bajor", "Blue" ] |}
+      {
+        r_name = "Benjamin Sisko";
+        r_favorite_number = 9;
+        r_location = "Bajor";
+        r_favorite_color = Some "Blue";
+      }
 
   let%test "parse object json representation" =
     parse_json
@@ -91,7 +97,28 @@ module Type_record = struct
     "r_location": "Bajor"
   }
   |}
-      { r_name = "Benjamin Sisko"; r_favorite_number = 9; r_location = "Bajor" }
+      {
+        r_name = "Benjamin Sisko";
+        r_favorite_number = 9;
+        r_location = "Bajor";
+        r_favorite_color = None;
+      }
+
+  let%test "parse object json representation with null" =
+    parse_json
+      {|
+  { "r_name": "Benjamin Sisko",
+    "r_favorite_number": 9,
+    "r_location": "Bajor",
+    "r_favorite_color": null
+  }
+  |}
+      {
+        r_name = "Benjamin Sisko";
+        r_favorite_number = 9;
+        r_location = "Bajor";
+        r_favorite_color = None;
+      }
 end
 
 module Type_variant = struct
@@ -102,8 +129,12 @@ module Type_variant = struct
     | Hello
     | Tuple1 of string
     | Tuple2 of string * Type_alias.alias
-    | Record3 of { name : name; favorite_number : int; location : string }
-  [@@deriving eq, serializer, deserializer]
+    | Record3 of {
+        name : name;
+        favorite_number : int;
+        location : string option;
+      }
+  [@@deriving eq, deserializer]
 
   let parse_json = parse_json equal_variant deserialize_variant
   let%test _ = parse_json {|"Hello"|} Hello
@@ -121,7 +152,7 @@ module Type_variant = struct
          {
            name = { first = "Benjamin"; last = "Sisko" };
            favorite_number = 9;
-           location = "Bajor";
+           location = Some "Bajor";
          })
 
   let%test _ =
@@ -140,7 +171,7 @@ module Type_variant = struct
          {
            name = { first = "Benjamin"; last = "Sisko" };
            favorite_number = 9;
-           location = "Bajor";
+           location = Some "Bajor";
          })
 end
 

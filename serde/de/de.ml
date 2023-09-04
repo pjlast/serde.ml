@@ -55,6 +55,14 @@ let deserialize_string :
   | exception e -> Error.unexpected_exception e
   | res -> res
 
+let deserialize_string_option :
+    type value state.
+    state Deserializer.t -> value Visitor.t -> (value, 'error de_error) result =
+ fun (module De) (module V) ->
+  match De.deserialize_string_option De.state (module De) (module V) with
+  | exception e -> Error.unexpected_exception e
+  | res -> res
+
 let deserialize_int :
     type value state.
     state Deserializer.t -> value Visitor.t -> (value, 'error de_error) result =

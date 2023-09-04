@@ -63,3 +63,14 @@ module String_visitor = struct
 
   let visit_string str = Ok str
 end
+
+module String_option_visitor = struct
+  include Visitor.Unimplemented
+
+  type visitor = string option
+  type value = string option
+  type error = unit
+  type tag = unit
+
+  let visit_string_option str_opt = Ok str_opt
+end
