@@ -71,11 +71,11 @@ let deserialize_option :
     (value option, 'error de_error) result =
  fun fn (module De) (module V) ->
   match De.deserialize_option De.state (module De) (module V) with
-  | exception _ -> (
+  | Error _ -> (
       match fn (module De) (module V) with
       | exception e -> Error.unexpected_exception e
       | res -> ( match res with Ok x -> Ok (Some x) | Error _ as err -> err))
-  | _ -> Ok None
+  | Ok _ -> Ok None
 
 let deserialize_int :
     type value state.
