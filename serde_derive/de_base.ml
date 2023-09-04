@@ -31,7 +31,8 @@ let de_fun ~ctxt (t : core_type) =
       | "float" -> [%expr Serde.De.deserialize_float]
       | "int" -> [%expr Serde.De.deserialize_int]
       | "string" -> [%expr Serde.De.deserialize_string]
-      | "option" -> [%expr Serde.De.deserialize_string_option]
+      | "option" ->
+          [%expr Serde.De.deserialize_option Serde.De.deserialize_string]
       | "unit" -> [%expr Serde.De.deserialize_unit]
       | _ ->
           let ser_fn_name =
@@ -88,7 +89,7 @@ let visitor_mod ~ctxt (t : core_type) =
       | "float" -> Some [%expr (module Serde.De.Impls.Float_visitor)]
       | "int" -> Some [%expr (module Serde.De.Impls.Int_visitor)]
       | "string" -> Some [%expr (module Serde.De.Impls.String_visitor)]
-      | "option" -> Some [%expr (module Serde.De.Impls.String_option_visitor)]
+      | "option" -> Some [%expr (module Serde.De.Impls.String_visitor)]
       | "unit" -> Some [%expr (module Serde.De.Impls.Unit_visitor)]
       | _ -> None)
   (* Unsupported serialization for these *)

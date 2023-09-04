@@ -63,6 +63,20 @@ let deserialize_string_option :
   | exception e -> Error.unexpected_exception e
   | res -> res
 
+let deserialize_option :
+    type value state.
+    (state Deserializer.t -> value Visitor.t -> (value, 'error de_error) result) ->
+    state Deserializer.t ->
+    value Visitor.t ->
+    (value option, 'error de_error) result =
+ fun fn (module De) (module V) ->
+  match De.deserialize_option De.state (module De) (module V) with
+  | exception _ -> (
+      match fn (module De) (module V) with
+      | exception e -> Error.unexpected_exception e
+      | res -> ( match res with Ok x -> Ok (Some x) | Error _ as err -> err))
+  | _ -> Ok None
+
 let deserialize_int :
     type value state.
     state Deserializer.t -> value Visitor.t -> (value, 'error de_error) result =
