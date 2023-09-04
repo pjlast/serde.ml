@@ -21,13 +21,24 @@ let gen_visit_map ~ctxt ~type_name:_ ?constructor ~field_visitor kvs parts =
 
   let extract_fields =
     List.fold_left
-      (fun body (name, pat, _ctyp, exp, _field_variant) ->
+      (fun body (name, pat, ctyp, exp, _field_variant) ->
         let op = var ~ctxt "let*" in
+        let tp_name =
+          match ctyp.ptyp_desc with
+          | Ptyp_constr (name, _) -> name.txt |> Longident.name
+          | _ -> ""
+        in
         let exp =
-          [%expr
-            match ![%e exp] with
-            | Some value -> Ok value
-            | None -> Serde.De.Error.missing_field [%e name |> Ast.estring ~loc]]
+          match tp_name with
+          | "option" ->
+              [%expr
+                match ![%e exp] with Some value -> Ok value | None -> Ok None]
+          | _ ->
+              [%expr
+                match ![%e exp] with
+                | Some value -> Ok value
+                | None ->
+                    Serde.De.Error.missing_field [%e name |> Ast.estring ~loc]]
         in
         let let_ = Ast.binding_op ~op ~loc ~pat ~exp in
         Ast.letop ~let_ ~ands:[] ~body |> Ast.pexp_letop ~loc)
